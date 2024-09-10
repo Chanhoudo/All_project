@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보행자를 위한 객체 인식 장치</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif; /* 글씨체 변경 */
+            background-color: #000000; /* 검은색 배경 */
+            color: #ffffff; /* 하얀색 글자 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 48px; /* 제목 크기 증가 */
+            text-align: center;
+            margin-bottom: 30px;
+            color: #FF6347; /* 토마토 색상 */
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7); /* 더 강한 그림자 효과 */
+            font-family: 'Poppins', sans-serif; /* 새로운 글씨체 적용 */
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px; /* 컨테이너 패딩 증가 */
+            background-color: #222222; /* 다크 그레이 배경 */
+            border-radius: 12px; /* 둥근 테두리 크기 증가 */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7); /* 그림자 효과 증가 */
+            max-width: 90%;
+            width: 1200px; /* 컨테이너 너비 증가 */
+            height: 70vh; /* 높이 설정 */
+        }
+        .image-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 55%; /* 이미지 섹션 너비 증가 */
+        }
+        .image-container {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7); /* 이미지 그림자 효과 증가 */
+        }
+        .image-title {
+            font-size: 24px; /* 텍스트 크기 증가 */
+            margin-bottom: 15px;
+            color: #FFD700; /* 황금색 */
+        }
+        .graph-container {
+            max-width: 40%;
+        }
+        .graph-container canvas {
+            max-width: 100%;
+            height: 100%; /* 그래프 높이 증가 */
+        }
+        .distances {
+            font-size: 24px; /* 텍스트 크기 증가 */
+            margin-top: 15px;
+        }
+        .status {
+            font-size: 28px; /* 상태 키워드 크기 */
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .timestamps-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333333; /* 더 어두운 다크 그레이 배경 */
+            border-radius: 8px;
+            width: 100%;
+            max-width: 1200px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+        }
+        .timestamp-entry {
+            font-size: 24px; /* 타임스탬프 크기 */
+            margin: 5px 0;
+        }
+        .save-button {
+            margin-top: 20px;
+            padding: 15px 30px; /* 버튼 크기 증가 */
+            font-size: 20px; /* 버튼 텍스트 크기 증가 */
+            border: none;
+            border-radius: 8px; /* 둥근 테두리 크기 증가 */
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .save-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>보행자를 위한 객체 인식 장치</h1>
+    <div class="container">
+        <div class="image-section">
+            <div class="image-title">실시간 카메라 영상</div>
+            <div class="image-container">
+                <img id="detected-image" src="" alt="Detected Object">
+            </div>
+        </div>
+        <div class="graph-container">
+            <h3 style="font-size: 28px;">거리 데이터</h3> <!-- 그래프 제목 크기 증가 -->
+            <canvas id="distanceChart"></canvas>
+            <div class="distances">
+                <p>사람과의 거리: <span id="person-distance">--</span> 미터</p>
+                <p>차와의 거리: <span id="car-distance">--</span> 미터</p>
+            </div>
+            <div id="status" class="status">--</div> <!-- 상태 키워드 표시 -->
+        </div>
+    </div>
+    
+    <div class="timestamps-container">
+        <h3 style="font-size: 28px; color: #FFD700;">위험 타임스탬프 기록</h3>
+        <div id="timestamps"></div> <!-- 타임스탬프들이 여기에 추가됨 -->
+        <button id="save-button" class="save-button" style="display: none;" onclick="saveTimestamps()">타임스탬프 저장</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let currentIndex = 0;
+        const timestamps = []; // 타임스탬프들을 저장할 배열
+        const maxIndex = 5; // 0~4번 인덱스까지만 실행
+
+        const ctx = document.getElementById('distanceChart').getContext('2d');
+        let distanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Person', 'Car'],
+                datasets: [{
+                    label: '거리 (미터)',
+                    data: [0, 0],
+                    backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)'],
+                    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white'  // 글자 색을 하얀색으로
+                        }
+                    }
+                }
+            }
+        });
+
+        function updateStatus(personDistance, carDistance) {
+            const personElement = document.getElementById('person-distance');
+            const carElement = document.getElementById('car-distance');
+            const statusElement = document.getElementById('status');
+            const timestampsElement = document.getElementById('timestamps');
+            const saveButton = document.getElementById('save-button');
+
+            let statusText = "안전";
+            let statusColor = "green";
+
+            // 사람과의 거리 판단
+            if (personDistance >= 0 && personDistance <= 10) {
+                personElement.style.color = "red";
+                statusText = "위험";
+                statusColor = "red";
+            } else if (personDistance >= 11 || personDistance == -1) {
+                personElement.style.color = "green";
+            }
+
+            // 차와의 거리 판단
+            if (carDistance >= 0 && carDistance <= 10) {
+                carElement.style.color = "red";
+                statusText = "위험";
+                statusColor = "red";
+            } else if (carDistance == -1 || carDistance >= 11) {
+                carElement.style.color = "green";
+            }
+
+            // 상태 표시 업데이트
+            statusElement.textContent = statusText;
+            statusElement.style.color = statusColor;
+
+            // 타임스탬프 처리
+            if (statusText === "위험") {
+                const now = new Date();
+                const dangerTimestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}_위험`;
+                
+                timestamps.push(dangerTimestamp);
+
+                const newTimestamp = document.createElement('div');
+                newTimestamp.className = 'timestamp-entry';
+                newTimestamp.textContent = dangerTimestamp;
+                timestampsElement.appendChild(newTimestamp);
+
+                saveButton.style.display = "inline-block"; // 저장 버튼 표시
+            }
+        }
+
+        function saveTimestamps() {
+            const blob = new Blob(timestamps.map(ts => ts + '\n'), { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `timestamps_${new Date().getTime()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function loadImage(index) {
+            fetch(`/image/${index}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error(data.error);
+                        return;
+                    }
+                    const imgElement = document.getElementById('detected-image');
+                    imgElement.src = 'data:image/jpeg;base64,' + data.image;
+
+                    const personDistance = data.distances.person;
+                    const carDistance = data.distances.car;
+
+                    document.getElementById('person-distance').textContent = personDistance;
+                    document.getElementById('car-distance').textContent = carDistance;
+
+                    // 상태 업데이트
+                    updateStatus(personDistance, carDistance);
+
+                    // 그래프 업데이트
+                    distanceChart.data.datasets[0].data = [personDistance, carDistance];
+                    distanceChart.update();
+                })
+                .catch(error => console.error('Error loading image:', error));
+        }
+
+        function startSlideshow() {
+            const interval = setInterval(() => {
+                loadImage(currentIndex);
+                currentIndex++;
+                if (currentIndex >= maxIndex) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        }
+
+        // 페이지가 로드될 때 슬라이드쇼 시작
+        window.onload = () => startSlideshow();
+    </script>
+</body>
+</html>
