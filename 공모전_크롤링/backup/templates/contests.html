@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공모전 목록</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">검색된 공모전 목록</h1>
+
+        <div class="row">
+            {% if contests %}
+            {% for contest in contests %}
+            <div class="col-md-6">
+                <div class="card mb-4 shadow-sm">
+                    {% if contest.image %}
+                    <!-- 이미지 경로에 검색어 추가 -->
+                    <img src="{{ url_for('static', filename='images/' ~ search_keyword ~ '/' ~ contest.image) }}" class="card-img-top" alt="공모전 이미지">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/default.jpg') }}" class="card-img-top" alt="기본 이미지">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ contest.title }}</h5>
+                        <p class="card-text"><strong>분야:</strong> {{ contest.category }}</p>
+                        <p class="card-text"><strong>주최기관:</strong> {{ contest.host }}</p>
+                        <p class="card-text"><strong>남은 기간:</strong> {{ contest.days_left }}</p>
+                        <p class="card-text"><strong>조회수:</strong> {{ contest.views }}</p>
+
+                        <a class="btn btn-outline-primary" data-toggle="collapse" href="#collapse{{ loop.index }}" role="button" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                            내용 보기
+                        </a>
+                        <div class="collapse mt-3" id="collapse{{ loop.index }}">
+                            <p class="card-text">{{ contest.description|safe }}</p> <!-- 설명 HTML 처리 -->
+                        </div>
+
+                        <a href="{{ contest.link }}" class="btn btn-outline-primary mt-2">자세히 보기</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p>검색 결과가 없습니다.</p>
+            {% endif %}
+        </div>
+
+        <!-- 갱신 버튼 추가 -->
+        <div class="mt-4">
+            <form action="/refresh" method="POST">
+                <input type="hidden" name="search_keyword" value="{{ search_keyword }}">
+                <button type="submit" class="btn btn-warning">갱신</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

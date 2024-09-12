@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공모전 검색</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">공모전 검색</h1>
+        <form action="/contests" method="get">
+            <div class="form-group">
+                <input type="text" class="form-control" name="search_keyword" placeholder="검색어를 입력하세요" required>
+            </div>
+            <button type="submit" class="btn btn-primary">검색</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+body {
+    background-color: #000000; /* 배경 검은색 */
+    color: #FFFFFF; /* 글씨 흰색 */
+}
+
+h1, h5 {
+    color: #FFFFFF; /* 헤더 글씨 흰색 */
+}
+
+.card {
+    background-color: #333333; /* 공모전 박스 회색 */
+    color: #FFFFFF; /* 카드 안의 글씨 색도 흰색 */
+    border: 1px solid #444444; /* 박스 테두리 색상 */
+}
+
+.card-img-top {
+    border-bottom: 2px solid #555555; /* 이미지 아래 구분선 */
+}
+
+.card-body a {
+    color: #FFFFFF; /* 버튼 텍스트 흰색 */
+    background-color: #555555; /* 버튼 배경 회색 */
+    border: none;
+}
+
+.card-body a:hover {
+    background-color: #777777; /* 버튼 호버 시 좀 더 밝은 회색 */
+}
+
+p {
+    color: #BBBBBB; /* 본문 텍스트 연한 회색 */
+}
+
+.btn-outline-primary {
+    background-color: #555555; /* 버튼 배경 회색 */
+    border: none;
+}
+
+.btn-outline-primary:hover {
+    background-color: #777777; /* 버튼 호버 시 조금 더 밝은 회색 */
+    color: #FFFFFF;
+}
+
+.form-control {
+    background-color: #333333; /* 검색 입력창 회색 */
+    color: #FFFFFF;
+    border: 1px solid #444444;
+}
+
+.btn-primary {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    background-color: #555555; /* 검색 버튼 색상 회색 */
+    border: none;
+    color: #FFFFFF;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background-color: #777777; /* 검색 버튼 호버 시 밝은 회색 */
+}
